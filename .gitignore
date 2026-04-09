@@ -1,0 +1,91 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Local workspace / editor state
+.codex/
+.idx/
+.vscode/
+*.code-workspace
+.metadata
+__codex_tmp_web_import_test.dart
+
+# Android / Gradle local state
+/android/.gradle/
+/android/.kotlin/
+/android/local.properties
+
+# Firebase / local CLI state
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Local build outputs / packaged artifacts
+*.apk
+*.aab
+*.ipa
+
+# Environment files / secrets
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p8
+*.p12
+*.pem
+*.mobileprovision
+key.properties
+**/key.properties
+**/google-services.json
+**/GoogleService-Info.plist
+**/serviceAccount*.json
+**/firebase-adminsdk*.json
+
+# Functions local deps / secrets
+/functions/node_modules/
+/functions/.env
+/functions/.env.*
+/functions/.runtimeconfig.json

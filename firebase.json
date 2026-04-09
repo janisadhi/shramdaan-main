@@ -1,0 +1,25 @@
+{
+  "functions": {
+    "source": "functions"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "shram-daan-72a9b",
+          "appId": "1:541706128340:android:32c6931405f21f717a6441",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "shram-daan-72a9b",
+          "configurations": {
+            "android": "1:541706128340:android:32c6931405f21f717a6441",
+            "web": "1:541706128340:web:83bffbcaa469f43a7a6441"
+          }
+        }
+      }
+    }
+  }
+}
