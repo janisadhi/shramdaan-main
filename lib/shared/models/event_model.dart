@@ -81,6 +81,8 @@ class Event {
 
   factory Event.fromMap(String id, Map<String, dynamic> data) {
     DateTime eventDateTime;
+    final coordinatePoint =
+        data['coordinates'] is GeoPoint ? data['coordinates'] as GeoPoint : null;
 
     if (data['eventDate'] is Timestamp) {
       eventDateTime = (data['eventDate'] as Timestamp).toDate();
@@ -98,8 +100,8 @@ class Event {
       location: data['location'] ?? 'No Location',
       formattedAddress:
           data['formattedAddress'] ?? data['location'] ?? 'No Location',
-      latitude: _toDouble(data['latitude']),
-      longitude: _toDouble(data['longitude']),
+      latitude: _toDouble(data['latitude']) ?? coordinatePoint?.latitude,
+      longitude: _toDouble(data['longitude']) ?? coordinatePoint?.longitude,
       eventDate: eventDateTime,
       category: data['category'] ?? 'General',
       organizerId: data['organizerId'] ?? '',
@@ -117,6 +119,9 @@ class Event {
   static double? _toDouble(dynamic value) {
     if (value is num) {
       return value.toDouble();
+    }
+    if (value is String) {
+      return double.tryParse(value.trim());
     }
     return null;
   }

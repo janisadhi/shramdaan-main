@@ -66,8 +66,19 @@ class _EventsListScreenState extends State<EventsListScreen> {
     _loadUserLocation();
   }
 
+  @override
+  void didUpdateWidget(covariant EventsListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final distanceFilterJustActivated =
+        oldWidget.maxDistanceKm == null && widget.maxDistanceKm != null;
+    if (distanceFilterJustActivated &&
+        (_userLatitude == null || _userLongitude == null)) {
+      _loadUserLocation();
+    }
+  }
+
   Future<void> _loadUserLocation() async {
-    final position = await LocationUtils.getCurrentPosition();
+    final position = await LocationUtils.getReliableCurrentPosition();
     if (!mounted) {
       return;
     }
@@ -112,6 +123,9 @@ class _EventsListScreenState extends State<EventsListScreen> {
 
   bool _matchesDistanceFilter(Event event) {
     if (widget.maxDistanceKm == null) {
+      return true;
+    }
+    if (_userLatitude == null || _userLongitude == null) {
       return true;
     }
     final distance = _distanceForEvent(event);

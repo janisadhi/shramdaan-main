@@ -259,12 +259,278 @@ The active tab is highlighted using the primary blue color. The account tab can 
 - `geolocator` for location access
 - `http` for reverse geocoding and address search calls
 - `image_picker` for local image selection
-- `mobile_scanner` for QR attendance scanning
-- `qr_flutter` for organizer QR code generation
-- `flutter_local_notifications` for foreground/local notification display on mobile
-- `url_launcher` for directions
-- `add_2_calendar` for calendar creation flow
+- `mobile_scanner` for QR scanning
+- `qr_flutter` for QR generation
+- `flutter_local_notifications` for foreground local notification display
+- `add_2_calendar` and `url_launcher` for calendar integration fallback behavior
 - `intl` for date and time formatting
+
+### 5.4 Local Development Prerequisites
+
+To run the current project successfully, the development machine should have:
+
+- Flutter SDK installed and available on PATH
+- Android SDK and an Android device or emulator for mobile testing
+- Chrome if web testing is required
+- Node.js 20 for Firebase Functions work
+- Firebase CLI for Firebase deployment tasks
+- FlutterFire CLI for regenerating Firebase configuration files
+
+Recommended verification commands:
+
+```bash
+flutter doctor
+firebase --version
+flutterfire --version
+node --version
+```
+
+Current platform notes:
+
+- Firebase is currently configured in the app for Android and Web only
+- iOS, macOS, Windows, and Linux Firebase platform configs are not yet generated in the current codebase
+- the Android package name in the project is still a placeholder and should be replaced before production publishing
+- release signing is not fully configured yet and must be set up with a real keystore before store distribution
+
+Windows-specific note:
+
+- when the project folder is stored on a different drive from Pub or Gradle caches, Gradle and Kotlin may fail with cross-drive cache path errors
+- to avoid this, keep `PUB_CACHE`, `GRADLE_USER_HOME`, and the project on the same drive when possible
+
+### 5.5 How to Run the Project Locally
+
+#### Default local run flow
+
+1. Open the project root.
+2. Install Flutter packages.
+3. Make sure Firebase configuration files point to the intended Firebase project.
+4. Run the app on Android or Web.
+
+Commands:
+
+```bash
+flutter pub get
+flutter run
+```
+
+Run on a specific target:
+
+```bash
+flutter run -d chrome
+flutter run -d android
+```
+
+Useful build commands:
+
+```bash
+flutter build apk
+flutter build apk --split-per-abi
+flutter build web
+```
+
+If Functions code has changed, install the Functions dependencies too:
+
+```bash
+cd functions
+npm install
+cd ..
+```
+
+#### Firebase-dependent run requirements
+
+The app will not run correctly unless the following Firebase-linked files are correctly configured for the target project:
+
+- `lib/firebase_options.dart`
+- `android/app/google-services.json`
+- `web/firebase-messaging-sw.js`
+
+If these files still point to an old Firebase project, authentication, Firestore, Storage, and notifications will connect to the wrong backend.
+
+#### Web notification run note
+
+For Web push notifications, the app expects a VAPID key through a compile-time define:
+
+```bash
+flutter run -d chrome --dart-define=FCM_WEB_VAPID_KEY=YOUR_VAPID_KEY
+```
+
+Without that value:
+
+- the web app can still run
+- browser push token registration will not work correctly
+- background browser notifications will be limited or unavailable
+
+### 5.6 Firebase Console Setup for a New Project
+
+If a completely new Firebase project is created for Shramdaan, the following Firebase services and steps are required.
+
+#### Step 1: Create the new Firebase project
+
+Create a new Firebase project in the Firebase console and note the new project ID.
+
+#### Step 2: Enable the required Firebase services
+
+The current app requires:
+
+- Authentication
+- Cloud Firestore
+- Firebase Storage
+- Firebase Cloud Messaging
+- Cloud Functions
+
+Authentication provider currently required by the app:
+
+- Email/Password
+
+#### Step 3: Register platform apps
+
+Register the following app targets in Firebase:
+
+- Android app
+- Web app
+
+The current Flutter codebase is actively configured for these two Firebase platforms:
+
+- Android
+- Web
+
+#### Step 4: Regenerate FlutterFire configuration
+
+After creating the Firebase project and platform apps, regenerate the FlutterFire configuration:
+
+```bash
+flutterfire configure --project YOUR_PROJECT_ID
+```
+
+This should update:
+
+- `lib/firebase_options.dart`
+- `firebase.json`
+
+Depending on your setup, you may also download or regenerate:
+
+- `android/app/google-services.json`
+
+If it is not automatically produced, download it manually from Firebase console and place it in:
+
+- `android/app/google-services.json`
+
+#### Step 5: Update Web Firebase Messaging configuration
+
+The Web service worker contains a hardcoded Firebase initialization block and must be updated to the new project values:
+
+- `web/firebase-messaging-sw.js`
+
+Update the following values in that file:
+
+- `apiKey`
+- `appId`
+- `messagingSenderId`
+- `projectId`
+- `authDomain`
+- `storageBucket`
+- `measurementId` if used
+
+#### Step 6: Create Web Push VAPID credentials
+
+If Web push notifications are needed:
+
+- open Firebase Cloud Messaging settings
+- generate or copy the Web Push certificate key pair
+- use the public VAPID key when running or building the web app
+
+Example:
+
+```bash
+flutter run -d chrome --dart-define=FCM_WEB_VAPID_KEY=YOUR_VAPID_KEY
+```
+
+#### Step 7: Deploy Firestore composite indexes
+
+This project now includes:
+
+- `firestore.indexes.json`
+
+Deploy the indexes with:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+These indexes support important event query combinations such as:
+
+- status plus category plus event date
+- status plus featured state
+- status plus event date descending
+- status plus title lowercase search support
+
+#### Step 8: Deploy Cloud Functions
+
+The Functions code is stored in:
+
+- `functions/index.js`
+
+Install dependencies and deploy:
+
+```bash
+cd functions
+npm install
+cd ..
+firebase deploy --only functions
+```
+
+The currently implemented backend functions support:
+
+- push fan-out for stored notifications
+- admin review notifications
+- one-hour event reminders
+- check-in reminders around event start
+
+#### Step 9: Recreate Firestore and Storage rules
+
+Important limitation in the current repository:
+
+- Firestore rules file is not currently checked into the repo
+- Storage rules file is not currently checked into the repo
+
+This means that for a brand-new Firebase project, the rules must be:
+
+- recreated manually
+- copied from the existing Firebase console
+- or exported from the existing project before migration
+
+#### Step 10: Migrate existing backend data if needed
+
+A new Firebase project will not automatically contain the old production data.
+
+If continuity is required, the following must be migrated separately:
+
+- Firestore documents
+- Firebase Authentication users
+- Firebase Storage files
+- existing notification-related documents if historical continuity is desired
+
+### 5.7 Firebase Deployment Artifacts in This Repository
+
+The main Firebase-related project files currently present in the repository are:
+
+- `firebase.json`
+- `firestore.indexes.json`
+- `lib/firebase_options.dart`
+- `android/app/google-services.json`
+- `web/firebase-messaging-sw.js`
+- `functions/package.json`
+- `functions/index.js`
+
+These files have different roles:
+
+- `firebase.json` maps Firebase CLI deployment targets
+- `firestore.indexes.json` defines composite Firestore indexes
+- `lib/firebase_options.dart` initializes Firebase in Flutter
+- `android/app/google-services.json` links the Android app to Firebase
+- `web/firebase-messaging-sw.js` powers background Web push handling
+- `functions/package.json` defines the Functions runtime dependencies
+- `functions/index.js` contains the deployed Cloud Functions logic
 
 ## 6. Architecture and Application Structure
 

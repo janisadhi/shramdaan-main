@@ -45,8 +45,8 @@ class LocationUtils {
       }
 
       final current = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-        timeLimit: const Duration(seconds: 10),
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 12),
       );
       _cachedPosition = current;
       return current;
@@ -55,6 +55,38 @@ class LocationUtils {
       _cachedPosition ??= lastKnown;
       return lastKnown;
     }
+  }
+
+  static bool isPositionReliable(
+    Position? position, {
+    double maxAccuracyMeters = 5000,
+  }) {
+    if (position == null) {
+      return false;
+    }
+    final accuracy = position.accuracy;
+    return accuracy.isFinite &&
+        accuracy > 0 &&
+        accuracy <= maxAccuracyMeters &&
+        position.latitude.abs() <= 90 &&
+        position.longitude.abs() <= 180;
+  }
+
+  static Future<Position?> getReliableCurrentPosition({
+    double maxAccuracyMeters = 5000,
+  }) async {
+    final current = await getCurrentPosition();
+    if (isPositionReliable(current, maxAccuracyMeters: maxAccuracyMeters)) {
+      return current;
+    }
+
+    final lastKnown = await Geolocator.getLastKnownPosition();
+    if (isPositionReliable(lastKnown, maxAccuracyMeters: maxAccuracyMeters)) {
+      _cachedPosition ??= lastKnown;
+      return lastKnown;
+    }
+
+    return null;
   }
 
   static Future<List<LocationSearchResult>> searchAddresses(

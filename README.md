@@ -1,110 +1,232 @@
+# Shramdaan
 
-# Shram Daan - Community Volunteering App
+Shramdaan is a Flutter and Firebase community volunteering platform for discovering, moderating, joining, and managing local service events. It supports the full event lifecycle from submission and admin review to RSVP, attendance verification, chat coordination, reminders, profiles, achievements, and leaderboard ranking.
 
-Shram Daan is a mobile application built with Flutter and Firebase, designed to connect volunteers with community service projects. It aims to revive the traditional practice of "donation of labor" by providing a modern, user-friendly platform for discovering, managing, and participating in local volunteer activities.
+## Overview
 
-## Features
+The app is designed around one core idea:
 
-  - **User Authentication**: Secure sign-up and login for volunteers and organizers.
-  - **Event Management**: Create, read, update, and delete community events.
-  - **Real-time Updates**: Live updates for event lists and chats using Firestore Streams.
-  - **Search & Filter**: Find events by title or category.
-  - **RSVP System**: Users can join and leave events.
-  - **Event Chat**: Real-time group chat for each event's participants.
-  - **User Profiles**: View user information and a list of joined events.
-  - **Leaderboard**: Gamified ranking of top volunteers based on events joined.
-  - **Admin Dashboard**: A special section for admins to approve new events and manage featured posts.
+**RSVP shows intent, but verified attendance shows contribution.**
+
+That principle drives event participation rules, QR attendance, hours, points, achievements, reminders, and leaderboard ranking.
+
+## Main Features
+
+- Email/password authentication
+- Event creation, editing, approval, rejection, and featuring
+- Search by event title and location
+- Category, time, and distance filtering
+- RSVP with a 1-hour cutoff before event start
+- QR-based check-in and check-out during the event window
+- Event chat with active and archived chat tabs
+- Private and public user profiles
+- Achievement badges and leaderboard ranges
+- Admin dashboard for moderation, analytics, user control, and broadcasts
+- In-app notifications, push notifications, admin review alerts, and event reminders
+- Add-to-calendar support from the event detail screen
+
+## Tech Stack
+
+- Flutter
+- Dart
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- Firebase Cloud Messaging
+- Firebase Cloud Functions
+- Flutter Map
+- Geolocator
+- Mobile Scanner
+
+## Project Structure
+
+```text
+lib/
+  features/
+    admin/
+    attendance/
+    auth/
+    chat/
+    events/
+    home/
+    leaderboard/
+    notifications/
+    profile/
+  shared/
+functions/
+web/
+android/
+```
 
 ## Getting Started
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+### Prerequisites
 
-### **1. Prerequisites**
+- Flutter SDK
+- Android SDK
+- Node.js 20
+- Firebase CLI
+- FlutterFire CLI
 
-Make sure you have the following software installed on your machine:
-
-  * **Flutter SDK**: [Installation Guide](https://flutter.dev/docs/get-started/install)
-  * **A Code Editor**: We recommend [VS Code](https://code.visualstudio.com/) with the Flutter extension or [Android Studio](https://developer.android.com/studio).
-  * **Firebase CLI**: [Installation Guide](https://www.google.com/search?q=https://firebase.google.com/docs/cli%23install-cli-standalone-binary)
-  * **FlutterFire CLI**: After installing the Firebase CLI, run this command:
-    ```bash
-    dart pub global activate flutterfire_cli
-    ```
-
-### **2. Setup Instructions**
-
-#### **Step A: Clone the Repository**
-
-Open your terminal and run the following command to clone the project:
+Useful checks:
 
 ```bash
-git clone https://github.com/janisadhikari-cloud/shramdaan.git
-cd shramdaan
+flutter doctor
+firebase --version
+flutterfire --version
+node --version
 ```
 
-#### **Step B: Create and Connect Your Own Firebase Project**
+### 1. Clone the Repository
 
-This project requires a Firebase backend. You will need to create your own Firebase project to connect the app to.
+```bash
+git clone <your-repo-url>
+cd shramdaan-main
+```
 
-1.  **Create a Firebase Project**:
-
-      * Go to the [Firebase Console](https://console.firebase.google.com/).
-      * Click **"Add project"** and give it a name (e.g., "My Shram Daan").
-      * Follow the on-screen instructions to create the project.
-
-2.  **Connect Your App to Firebase**:
-
-      * In your terminal, at the root of the project folder, run the configure command:
-        ```bash
-        flutterfire configure
-        ```
-      * The command will ask you to log in to Firebase and select the project you just created.
-      * When prompted to choose platforms, select **Android** and **iOS**.
-      * This will automatically generate a `lib/firebase_options.dart` file in your project, which contains the keys to connect to your specific Firebase project.
-
-3.  **Enable Firebase Services**:
-    In your new Firebase project's console, you must enable the services we use:
-
-      * **Authentication**:
-          * Go to the **Authentication** section.
-          * Click the "Sign-in method" tab.
-          * Enable the **Email/Password** provider.
-      * **Cloud Firestore**:
-          * Go to the **Cloud Firestore** section.
-          * Click "Create database".
-          * Start in **test mode** for now.
-      * **Storage**:
-          * Go to the **Storage** section.
-          * Click "Get started".
-          * Start in **test mode** for now.
-
-#### **Step C: Get Flutter Dependencies**
-
-Now that the project is configured, run this command to download all the necessary packages:
+### 2. Install Flutter Dependencies
 
 ```bash
 flutter pub get
 ```
 
-### **3. Running the Application**
+### 3. Set Up Firebase
 
-1.  **Select a Device**: Open the project in your code editor (VS Code or Android Studio). Make sure an emulator is running or a physical device is connected. Select your target device from the device list.
-2.  **Run the App**: Launch the app by pressing **F5** or running the following command in your terminal:
-    ```bash
-    flutter run
-    ```
+Create a Firebase project and enable:
 
-The app should now build and run on your selected device, connected to your personal Firebase backend.
+- Authentication
+- Cloud Firestore
+- Firebase Storage
+- Firebase Cloud Messaging
+- Cloud Functions
 
-### **4. (Optional) Set an Admin Role**
+Enable this auth provider:
 
-To access the Admin Dashboard, you need to assign the "admin" role to your user account.
+- Email/Password
 
-1.  Sign up for a new account in the app.
-2.  Go to your **Cloud Firestore** database in the Firebase Console.
-3.  Navigate to the `users` collection and find the document with your user ID.
-4.  Add a new field:
-      * **Field name**: `role`
-      * **Type**: `string`
-      * **Value**: `admin`
-5.  Save the document. After a hot restart, the "Admin Dashboard" button will appear on your profile screen.
+Register these app targets:
+
+- Android
+- Web
+
+Regenerate the Flutter Firebase config:
+
+```bash
+flutterfire configure --project YOUR_PROJECT_ID
+```
+
+This project expects these Firebase-linked files:
+
+- [`lib/firebase_options.dart`](lib/firebase_options.dart)
+- [`android/app/google-services.json`](android/app/google-services.json)
+- [`web/firebase-messaging-sw.js`](web/firebase-messaging-sw.js)
+
+Important:
+
+- `web/firebase-messaging-sw.js` contains a hardcoded Firebase config block and must be updated if you switch Firebase projects
+- Firestore and Storage rules are not currently checked into this repo, so you must recreate or export them separately
+
+### 4. Deploy Firestore Indexes
+
+This repo includes the Firestore index manifest:
+
+- [`firestore.indexes.json`](firestore.indexes.json)
+
+Deploy it with:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+### 5. Deploy Cloud Functions
+
+Install Functions dependencies:
+
+```bash
+cd functions
+npm install
+cd ..
+```
+
+Deploy:
+
+```bash
+firebase deploy --only functions
+```
+
+### 6. Run the App
+
+Run on the default connected device:
+
+```bash
+flutter run
+```
+
+Run on Android:
+
+```bash
+flutter run -d android
+```
+
+Run on Chrome:
+
+```bash
+flutter run -d chrome
+```
+
+If you want web push notifications, provide the VAPID key:
+
+```bash
+flutter run -d chrome --dart-define=FCM_WEB_VAPID_KEY=YOUR_VAPID_KEY
+```
+
+## Admin Access
+
+To test admin features:
+
+1. Create a user account in the app.
+2. Open Firestore.
+3. In the `users` collection, set the user document field:
+
+```text
+role = admin
+```
+
+After restarting the app, the admin dashboard controls will be available for that user.
+
+## Build Commands
+
+```bash
+flutter build apk
+flutter build apk --split-per-abi
+flutter build web
+```
+
+## Firebase Deployment Files
+
+These files matter when moving the app to a new Firebase project:
+
+- [`firebase.json`](firebase.json)
+- [`firestore.indexes.json`](firestore.indexes.json)
+- [`lib/firebase_options.dart`](lib/firebase_options.dart)
+- [`android/app/google-services.json`](android/app/google-services.json)
+- [`web/firebase-messaging-sw.js`](web/firebase-messaging-sw.js)
+- [`functions/index.js`](functions/index.js)
+- [`functions/package.json`](functions/package.json)
+
+## Important Notes
+
+- The current Android `applicationId` is still a placeholder in [`android/app/build.gradle.kts`](android/app/build.gradle.kts) and should be changed before production publishing.
+- Release signing is not fully configured yet; a real keystore is required before store distribution.
+- A new Firebase project will not automatically include old Firestore data, Auth users, Storage files, or rules.
+- Web push requires a valid VAPID key.
+
+## Detailed Documentation
+
+For the full technical and functional documentation, see:
+
+- [`documentation.md`](documentation.md)
+
+## Status
+
+This is an actively evolving project. Features, UI, and Firebase setup details may continue to change as the app grows.
