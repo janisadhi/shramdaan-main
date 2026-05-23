@@ -89,7 +89,7 @@ If `flutterfire` is not recognized after installation, add Dart's global bin dir
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/janisadhi/shramdaan-main.git
 cd shramdaan-main
 ```
 
