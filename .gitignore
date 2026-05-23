@@ -89,3 +89,4 @@ key.properties
 /functions/.env
 /functions/.env.*
 /functions/.runtimeconfig.json
+firebase.json 
