@@ -40,7 +40,7 @@ dependencies:
   firebase_storage: ^13.0.2 
   firebase_messaging: ^16.0.2
   flutter_local_notifications: ^18.0.1
-  font_awesome_flutter: ^10.8.0
+  font_awesome_flutter: ^11.0.0
 
   intl: ^0.20.2
   image_picker: ^1.2.0
@@ -60,6 +60,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: "^0.13.1" # Add this line
+  mocktail: ^1.0.5
+  fake_cloud_firestore: ^4.0.0
+  firebase_auth_mocks: ^0.15.1
 
 
   # The "flutter_lints" package below contains a set of recommended lints to

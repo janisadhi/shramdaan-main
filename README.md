@@ -77,6 +77,15 @@ flutterfire --version
 node --version
 ```
 
+Install the Firebase tools if they are not already available:
+
+```bash
+npm install -g firebase-tools
+dart pub global activate flutterfire_cli
+```
+
+If `flutterfire` is not recognized after installation, add Dart's global bin directory to your PATH.
+
 ### 1. Clone the Repository
 
 ```bash

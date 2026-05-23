@@ -180,8 +180,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _NavItemData {
-  final IconData icon;
-  final IconData activeIcon;
+  final FaIconData icon;
+  final FaIconData activeIcon;
   final String label;
 
   const _NavItemData({
@@ -193,7 +193,7 @@ class _NavItemData {
 
 class _HomeNavButton extends StatelessWidget {
   final String label;
-  final IconData icon;
+  final FaIconData icon;
   final bool selected;
   final VoidCallback onTap;
   final int badgeCount;

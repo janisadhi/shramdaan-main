@@ -19,9 +19,26 @@ import '../../features/leaderboard/models/leaderboard_entry_model.dart';
 import '../../features/notifications/models/app_notification_model.dart';
 import '../models/event_model.dart';
 
+typedef StorageUploadHandler = Future<String?> Function({
+  required Uint8List imageBytes,
+  required String path,
+  required String fileName,
+});
+
 class FirestoreService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  FirestoreService({
+    FirebaseFirestore? firestore,
+    FirebaseStorage? storage,
+    StorageUploadHandler? uploadHandler,
+  })  : _db = firestore ?? FirebaseFirestore.instance,
+        _storage = storage,
+        _uploadHandler = uploadHandler;
+
+  final FirebaseFirestore _db;
+  final FirebaseStorage? _storage;
+  final StorageUploadHandler? _uploadHandler;
+
+  FirebaseStorage get _resolvedStorage => _storage ?? FirebaseStorage.instance;
 
   Stream<List<Event>> getEventsStream({String? category, String? searchQuery}) {
     Query query = _db.collection('events').where('status', isEqualTo: 'approved');
@@ -131,6 +148,9 @@ class FirestoreService {
     try {
       final existingDoc = await _db.collection('events').doc(eventId).get();
       final existingData = existingDoc.data();
+      if (existingData?['endedAt'] != null || existingData?['status'] == 'archived') {
+        throw Exception('Completed events cannot be edited.');
+      }
       final previousImageUrl = (existingData?['imageUrl'] as String?)?.trim() ?? '';
 
       if (data['eventDate'] is DateTime) {
@@ -177,7 +197,14 @@ class FirestoreService {
   }) async {
     try {
       final path = 'event_images/${_buildSafeImageFileName(fileName)}';
-      final storageRef = _storage.ref().child(path);
+      if (_uploadHandler != null) {
+        return await _uploadHandler!(
+          imageBytes: imageBytes,
+          path: path,
+          fileName: fileName,
+        );
+      }
+      final storageRef = _resolvedStorage.ref().child(path);
       final uploadTask = storageRef.putData(
         imageBytes,
         SettableMetadata(contentType: _guessImageContentType(fileName)),
@@ -296,6 +323,11 @@ class FirestoreService {
       };
       await recordRef.set(createdData);
       return AttendanceRecord.fromMap(recordId, createdData);
+    }
+
+    final existingRecord = AttendanceRecord.fromMap(recordId, existingData);
+    if (currentTime.isBefore(existingRecord.checkInTime)) {
+      throw Exception('Check-out cannot happen before check-in.');
     }
 
     await recordRef.update({
@@ -579,6 +611,20 @@ class FirestoreService {
 
   Future<void> sendMessage(String eventId, ChatMessage message) async {
     try {
+      if (message.text.trim().isEmpty) {
+        throw Exception('Message cannot be empty.');
+      }
+      final eventDoc = await _db.collection('events').doc(eventId).get();
+      final eventData = eventDoc.data();
+      final isOrganizer = eventData?['organizerId'] == message.senderId;
+      final senderRsvp = await _db
+          .collection('rsvps')
+          .doc('${message.senderId}-$eventId')
+          .get();
+      if (!isOrganizer && !senderRsvp.exists) {
+        throw Exception('Only event participants can send chat messages.');
+      }
+
       await _db.collection('events').doc(eventId).collection('messages').add(message.toMap());
       final participants = await _db
           .collection('rsvps')
@@ -590,8 +636,7 @@ class FirestoreService {
           .where((userId) => userId != message.senderId)
           .toSet();
 
-      final eventDoc = await _db.collection('events').doc(eventId).get();
-      final eventTitle = eventDoc.data()?['title'] ?? 'an event';
+      final eventTitle = eventData?['title'] ?? 'an event';
 
       await _db.collection('users').doc(message.senderId).collection('chatSummaries').doc(eventId).set({
         'eventId': eventId,
@@ -743,7 +788,14 @@ class FirestoreService {
     try {
       final path =
           'profile_pictures/$userId-${DateTime.now().millisecondsSinceEpoch}.${_normalizedImageExtension(fileName)}';
-      final storageRef = _storage.ref().child(path);
+      if (_uploadHandler != null) {
+        return await _uploadHandler!(
+          imageBytes: imageBytes,
+          path: path,
+          fileName: fileName,
+        );
+      }
+      final storageRef = _resolvedStorage.ref().child(path);
       final uploadTask = storageRef.putData(
         imageBytes,
         SettableMetadata(contentType: _guessImageContentType(fileName)),
@@ -1314,7 +1366,7 @@ class FirestoreService {
         return;
       }
 
-      await _storage.refFromURL(imageUrl).delete();
+      await _resolvedStorage.refFromURL(imageUrl).delete();
     } catch (e) {
       print('Error deleting storage file: $e');
     }
