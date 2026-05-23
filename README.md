@@ -124,11 +124,6 @@ Regenerate the Flutter Firebase config:
 flutterfire configure --project YOUR_PROJECT_ID
 ```
 
-This project expects these Firebase-linked files:
-
-- [`lib/firebase_options.dart`](lib/firebase_options.dart)
-- [`android/app/google-services.json`](android/app/google-services.json)
-- [`web/firebase-messaging-sw.js`](web/firebase-messaging-sw.js)
 
 Important:
 
@@ -230,11 +225,7 @@ These files matter when moving the app to a new Firebase project:
 - A new Firebase project will not automatically include old Firestore data, Auth users, Storage files, or rules.
 - Web push requires a valid VAPID key.
 
-## Detailed Documentation
 
-For the full technical and functional documentation, see:
-
-- [`documentation.md`](documentation.md)
 
 ## Status
 
